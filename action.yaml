@@ -1,0 +1,53 @@
+name: 'Make documentation with TeXinfo'
+description: >-
+  Build the documentation for a Common Lisp System using TeXinfo.
+branding:
+  icon: box
+  color: blue
+inputs:
+  system:
+    description: |
+      The Common Lisp system to load.
+    required: true
+
+  entrypoint:
+    description: |
+      The entrypoint of the program to run.
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: 'Install TeXinfo'
+      if: runner.os == 'Linux'
+      shell: sh
+      run: >-
+        sudo apt install
+        texinfo
+        texlive
+    - name: 'Install TeXinfo'
+      if: runner.os == 'macOS'
+      shell: sh
+      run: >-
+        sudo port install
+        texinfo
+        texlive
+    - name: 'Make documentation'
+      shell: sh
+      run: >-
+        makedocstrings=${{ github.action_path }}/docstrings.lisp
+        makedocsystem=${{ inputs.system }}
+        ${{ github.action_path }}/makedoc
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.system }}.html
+        path: obj/makedoc/${{ inputs.system }}.html
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.system }}.info
+        path: obj/makedoc/${{ inputs.system }}.info
+    - uses: actions/upload-artifact@v3
+      with:
+        name: ${{ inputs.system }}.pdf
+        path: obj/makedoc/${{ inputs.system }}.pdf
+
